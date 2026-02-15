@@ -9,26 +9,26 @@ import numpy as np
 from PIL import Image
 
 train_transform = transforms.Compose([
-    transforms.Resize((224, 224)),
+    transforms.Resize((64, 64)),
     transforms.RandomHorizontalFlip(p=0.3),
     transforms.RandomRotation(10),
     transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.05),
     transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)),
     transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
 ])
 
 val_transform = transforms.Compose([
-    transforms.Resize((224, 224)),
+    transforms.Resize((64, 64)),
     transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
 ])
 
 
 class ResNetLeaf(nn.Module):
     def __init__(self, num_classes=8):
         super(ResNetLeaf, self).__init__()
-        self.resnet = models.resnet50(pretrained=True)
+        self.resnet = models.resnet18(pretrained=True)
         in_features = self.resnet.fc.in_features
         self.resnet.fc = nn.Linear(in_features, num_classes)
 
@@ -45,8 +45,8 @@ def main():
     print(f"训练集：{len(train_data)}张，验证集：{len(val_data)}张")
     print(f'类别：{train_data.classes}')
 
-    train_loader = DataLoader(train_data, batch_size=32, shuffle=True)
-    val_loader = DataLoader(val_data, batch_size=32, shuffle=False)
+    train_loader = DataLoader(train_data, batch_size=64, shuffle=True)
+    val_loader = DataLoader(val_data, batch_size=64, shuffle=True)
 
     model = ResNetLeaf(num_classes=len(train_data.classes)).to(device)
 
@@ -57,7 +57,7 @@ def main():
 
     writer = SummaryWriter('./logs/leaf_pytorch')
 
-    epochs = 100
+    epochs = 300
     best_acc = 0
 
     for epoch in range(epochs):
